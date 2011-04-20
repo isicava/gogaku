@@ -3,7 +3,9 @@ require 'rexml/document'
 require 'rubygems'
 require 'mp3info'
 
-RANDOM_KEY = '0077PTLP2BX71C'
+#RANDOM_KEY = '0077PTLP2BX71C'
+#RANDOM_KEY = '0109BSNQVLFRF1'
+RANDOM_KEY = '0158JU8Q6YFFG2'
 
 class FlvFile
   attr_accessor :io
