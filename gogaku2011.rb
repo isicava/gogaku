@@ -3,9 +3,41 @@ require 'rexml/document'
 require 'rubygems'
 require 'mp3info'
 
-#RANDOM_KEY = '0077PTLP2BX71C'
+URL_PREFIX = "http://www.nhk.or.jp/gogaku"
+
+#RANDOM_KEY = '0708VDUKWV57JA'
+#RANDOM_KEY = '0624ML6UEAWJDR'
+#RANDOM_KEY = '0532RQRK7HD79C'
+#RANDOM_KEY = '0489YU92YUCBUE'
+#RANDOM_KEY = '0473HBD7U85KNV'
+#RANDOM_KEY = '0417CGN3L24HDL'
+#RANDOM_KEY = '0383GUM3A7ERCK'
+#RANDOM_KEY = '0233SSECSKHQTA'
+#RANDOM_KEY = '0225GMVGLECXN9'
+#RANDOM_KEY = '0158JU8Q6YFFG2'
 #RANDOM_KEY = '0109BSNQVLFRF1'
-RANDOM_KEY = '0158JU8Q6YFFG2'
+#RANDOM_KEY = '0077PTLP2BX71C'
+
+def get_random_key
+  random_key = ""
+  IO.popen(["gnash", "-r0", "-t5", "-v", "#{URL_PREFIX}/common/swf/streaming.swf"]) { |io|
+    while log = io.gets
+      if log =~ %r!#{URL_PREFIX}/common/swf/(.*)/listdataflv.xml!
+        random_key = $1
+        break
+      end
+    end
+  } rescue false
+  if random_key == ""
+    puts "Failed to get random_key"
+    exit 1
+  else
+    puts "random_key is #{random_key}"
+    random_key
+  end
+end
+
+RANDOM_KEY = get_random_key
 
 class FlvFile
   attr_accessor :io
@@ -168,11 +200,11 @@ class RtmpServer
 end
 
 def english program
-  "http://www.nhk.or.jp/gogaku/english/#{program}/#{RANDOM_KEY}/listdataflv.xml"
+  "#{URL_PREFIX}/english/#{program}/#{RANDOM_KEY}/listdataflv.xml"
 end
 
 def language language
-  "http://www.nhk.or.jp/gogaku/#{language}/kouza/#{RANDOM_KEY}/listdataflv.xml"
+  "#{URL_PREFIX}/#{language}/kouza/#{RANDOM_KEY}/listdataflv.xml"
 end
 
 xml_uris = [
