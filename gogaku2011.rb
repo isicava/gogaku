@@ -104,7 +104,7 @@ class RtmpServer
   FLV_HOST = 'flv9.nhk.or.jp'
   FLV_APP = 'flv9/_definst_/'
   FLV_SERVICE_PREFIX = "flv:gogaku/streaming/flv/#{RANDOM_KEY}/"
-  RTMPDUMP = "/Users/fafhrd/bin/rtmpdump"
+  RTMPDUMP = "rtmpdump"
   IS_WINDOWS = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|cygwin|bccwin/
 
   def url file
@@ -144,7 +144,7 @@ class RtmpServer
       mp3.tag2.TPE1 = "NHK"
       mp3.tag2.TPE2 = "NHK"
       mp3.tag2.TIT2 = hdate
-      mp3.tag2.TYER = "2011"
+      mp3.tag2.TYER = "2012"
       mp3.tag2.TRCK = track
     end
   end
@@ -191,6 +191,7 @@ class RtmpServer
     elsif file =~ /.flv$/
       process_flv file, nil, nil
     else
+      puts file
       open(file) do |f|
         f.each { |line| process_file line.chomp }
       end
@@ -207,16 +208,22 @@ def language language
   "#{URL_PREFIX}/#{language}/kouza/#{RANDOM_KEY}/listdataflv.xml"
 end
 
+def levelup language
+  "#{URL_PREFIX}/#{language}/levelup/#{RANDOM_KEY}/listdataflv.xml"
+end
+
 xml_uris = [
             language("german"),
             language("spanish"),
             language("italian"),
             language("french"),
-            # language("chinese"),
+            language("chinese"),
+            language("russian"),
+            levelup("chinese"),
             # language("hangeul"),
             # english("training"),
             # english("business1"),
-            english("business2"),
+            # english("business2"),
             # english("kaiwa"),
            ]
 
