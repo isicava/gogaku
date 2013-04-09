@@ -5,39 +5,11 @@ require 'mp3info'
 
 URL_PREFIX = "http://www.nhk.or.jp/gogaku"
 
-#RANDOM_KEY = '0708VDUKWV57JA'
-#RANDOM_KEY = '0624ML6UEAWJDR'
-#RANDOM_KEY = '0532RQRK7HD79C'
-#RANDOM_KEY = '0489YU92YUCBUE'
-#RANDOM_KEY = '0473HBD7U85KNV'
-#RANDOM_KEY = '0417CGN3L24HDL'
-#RANDOM_KEY = '0383GUM3A7ERCK'
-#RANDOM_KEY = '0233SSECSKHQTA'
-#RANDOM_KEY = '0225GMVGLECXN9'
-#RANDOM_KEY = '0158JU8Q6YFFG2'
-#RANDOM_KEY = '0109BSNQVLFRF1'
-#RANDOM_KEY = '0077PTLP2BX71C'
-
 def get_random_key
-  random_key = ""
-  IO.popen(["gnash", "-r0", "-t5", "-v", "#{URL_PREFIX}/common/swf/streaming.swf"]) { |io|
-    while log = io.gets
-      if log =~ %r!#{URL_PREFIX}/common/swf/(.*)/listdataflv.xml!
-        random_key = $1
-        break
-      end
-    end
-  } rescue false
-  if random_key == ""
-    puts "Failed to get random_key"
-    exit 1
-  else
-    puts "random_key is #{random_key}"
-    random_key
-  end
+  "1284L2S8ZZWWQ4"
 end
 
-RANDOM_KEY = get_random_key
+CONNECT_DIR = get_random_key
 
 class FlvFile
   attr_accessor :io
@@ -103,12 +75,12 @@ end
 class RtmpServer
   FLV_HOST = 'flv9.nhk.or.jp'
   FLV_APP = 'flv9/_definst_/'
-  FLV_SERVICE_PREFIX = "flv:gogaku/streaming/flv/#{RANDOM_KEY}/"
+  FLV_SERVICE_PREFIX = "flv:gogaku/streaming/flv/"
   RTMPDUMP = "rtmpdump"
   IS_WINDOWS = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|cygwin|bccwin/
 
   def url file
-    "rtmp://#{FLV_HOST}/#{FLV_APP}#{FLV_SERVICE_PREFIX}" + file.sub(".flv", "")
+    "https://nhkmovs-i.akamaihd.net/i/gogaku/" + file.sub(".mp4", "")
   end
 
   def command file
@@ -201,29 +173,29 @@ class RtmpServer
 end
 
 def english program
-  "#{URL_PREFIX}/english/#{program}/#{RANDOM_KEY}/listdataflv.xml"
+  "#{URL_PREFIX}/english/#{program}/#{CONNECT_DIR}/listdataflv.xml"
 end
 
 def language language
-  "#{URL_PREFIX}/#{language}/kouza/#{RANDOM_KEY}/listdataflv.xml"
+  "#{URL_PREFIX}/#{language}/kouza/#{CONNECT_DIR}/listdataflv.xml"
 end
 
 def levelup language
-  "#{URL_PREFIX}/#{language}/levelup/#{RANDOM_KEY}/listdataflv.xml"
+  "#{URL_PREFIX}/#{language}/levelup/#{CONNECT_DIR}/listdataflv.xml"
 end
 
 xml_uris = [
-            language("german"),
-            language("spanish"),
-            language("italian"),
-            language("french"),
-            language("chinese"),
-            language("russian"),
-            levelup("chinese"),
+            # language("german"),
+            # language("spanish"),
+            # language("italian"),
+            # language("french"),
+            # language("chinese"),
+            # language("russian"),
+            # levelup("chinese"),
             # language("hangeul"),
             # english("training"),
             # english("business1"),
-            # english("business2"),
+            english("business2"),
             # english("kaiwa"),
            ]
 
