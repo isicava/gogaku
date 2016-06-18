@@ -1,0 +1,4 @@
+*.flv
+*.mp3
+/data
+/vendor

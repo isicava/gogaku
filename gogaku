@@ -1,1 +1,1 @@
-rvm 1.9.3 do ruby gogaku.rb
+bundle exec ruby gogaku.rb
