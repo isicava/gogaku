@@ -1,1 +1,1 @@
-gogaku2016.rb
+gogaku2017.rb
