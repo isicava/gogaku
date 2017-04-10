@@ -10,8 +10,12 @@ require 'date'
 OP_NO_TLSv1_2 = 0x08000000
 OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options] |= OP_NO_TLSv1_2
 
-def make_path file
-  "https://nhk-vh.akamaihd.net/i/gogaku-stream/mp4/#{file}/master.m3u8"
+def make_path file, isLimited=false
+  if isLimited
+    "https://nhk-vh.akamaihd.net/i/gogaku-stream/r/#{file}/master.m3u8"
+  else
+    "https://nhk-vh.akamaihd.net/i/gogaku-stream/mp4/#{file}/master.m3u8"
+  end
 end
 
 def listdataxml(lang, course)
@@ -22,7 +26,7 @@ def download path, outfile
   system "ffmpeg -i #{path} -absf aac_adtstoasc -acodec copy #{outfile}"
 end
 
-def proc_xml url
+def proc_xml url, isLimited=false
   # puts url
   open(url) do |f|
     doc = REXML::Document.new(f)
@@ -34,7 +38,7 @@ def proc_xml url
       file = e.attributes["file"]
       nendo = e.attributes["nendo"]
       pgcode = e.attributes["pgcode"]
-      path = make_path(file)
+      path = make_path(file, isLimited)
       outfile = "data/" + file.sub("mp4", "m4a")
       if FileTest.exist?(outfile) && FileTest.size?(outfile) >= 1000000
         puts "Skipped . . . #{outfile}"
@@ -47,9 +51,9 @@ def proc_xml url
   end
 end
 
-def proc_url_list(list)
+def proc_url_list(list, isLimited = false)
   list.each do |url|
-    proc_xml url
+    proc_xml url, isLimited
   end
 end
 
@@ -96,11 +100,9 @@ list = [
   # english("enjoy"),
   # english("timetrial"),
   english("gendai"),
-  english("3month"),
   english("business1"),
   english("business2"),
-  # english("kouryaku"),
-  # english("yomu"),
+  english("vr-radio"),
 
   chinese("kouza"),
   chinese("levelup"),
@@ -121,4 +123,9 @@ list = [
   kouza2("russian"),
 ]
 
+limited_list = [
+  english("3month"),
+]
+
 proc_url_list list
+proc_url_list limited_list, true
