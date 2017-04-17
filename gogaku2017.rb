@@ -30,7 +30,7 @@ def proc_xml url, isLimited=false
   # puts url
   open(url) do |f|
     doc = REXML::Document.new(f)
-    doc.elements.each("musicdata/music") do |e|
+    doc.elements.to_a("musicdata/music").last(5).each do |e|
       title = e.attributes["title"]
       hdate = e.attributes["hdate"]
       kouza = e.attributes["kouza"]
