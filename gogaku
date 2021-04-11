@@ -1,1 +1,2 @@
-bundle exec ruby gogaku.rb
+#!/bin/sh
+bundle exec ruby gogaku.rb "$@" 
