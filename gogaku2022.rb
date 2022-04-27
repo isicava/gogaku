@@ -30,49 +30,34 @@ def listdatajson(code)
 end
 
 def download path, outfile
+  puts "#{path}"
+  a = path.split(/\?/)
+  path = a[0] if a.length >= 2
   #ffmpeg = "/usr/local/Cellar/ffmpeg/3.3.1/bin/ffmpeg"
   ffmpeg = "ffmpeg -loglevel warning"
   system "#{ffmpeg} -i #{path} -absf aac_adtstoasc -acodec copy \"#{outfile}\""
 end
 
-def proc_xml url, isLimited=false
-  # puts url
-  URI.open(url) do |f|
-    doc = REXML::Document.new(f)
-    doc.elements.to_a("musicdata/music").last(10).each do |e|
-      title = e.attributes["title"]
-      hdate = e.attributes["hdate"]
-      kouza = e.attributes["kouza"]
-      code = e.attributes["code"]
-      file = e.attributes["file"]
-      nendo = e.attributes["nendo"]
-      pgcode = e.attributes["pgcode"]
-      path = make_path(file, isLimited)
-      outfile = "data/" + file.sub("mp4", "m4a")
-      if FileTest.exist?(outfile) && FileTest.size?(outfile) >= 1000000
-        puts "Skipped . . . #{outfile}"
-      else
-        puts "Downloading . . . #{outfile}"
-        download path, outfile
-        set_title outfile, title, hdate, kouza, code, nendo
-      end
-    end
-  end
-end
-
 def proc_json url, isLimited=false
-  # puts url
+  puts url
   uri = URI.parse(url)
   json = Net::HTTP.get(uri)
   doc = JSON.parse(json)
   main = doc["main"]
   program_name = main["program_name"]
-  nendo = "2021"
+  nendo = "2022"
   main["detail_list"].each do |list|
     list["file_list"].each do |e|
       title = e["file_title"]
       onair_date = e["onair_date"]
-      _, hdate = */\A(\d+月\d+日)/.match(onair_date)
+      _, month, date = */\A(\d+)月(\d+)日/.match(onair_date)
+      begin
+        hdate = month + '月' + date + '日'
+      rescue
+        puts 'ERROR', title, ',', onair_date
+        next
+      end
+      track = month.to_i * 100 + date.to_i
       kouza = program_name
       file_id = e["file_id"]
       path = e["file_name"]
@@ -84,7 +69,7 @@ def proc_json url, isLimited=false
       else
         puts "Downloading . . . #{outfile}"
         download path, outfile
-        set_title outfile, program_name, hdate, kouza, file_id, nendo
+        set_title outfile, program_name, title, hdate, kouza, file_id, nendo, track
       end
     end
   end
@@ -120,22 +105,25 @@ def english(course)
   listdataxml("english", course)
 end
 
-def set_title file, title, hdate, kouza, code, nendo
+def set_title file, album, title, hdate, kouza, code, nendo, track
   TagLib::MP4::File.open(file) do |mp4|
     tag = mp4.tag
     tag.genre = "Education"
     tag.artist = 'NHK'
-    tag.album = title + nendo
-    tag.title = hdate
+    tag.album = album
+    tag.title = title
     tag.year = nendo.to_i
-    tag.track = code.to_i % 1000
-    tag.comment = code
+    tag.track = track
+    tag.comment = hdate + " " + code
     mp4.save
   end
 end
 
 
 list = [
+  listdatajson("0937"), # アラビア語講座
+  # listdatajson("2769"), # ポルトガル語講座 2021年度
+  listdatajson("1893"), # ポルトガル語
   # english("basic0"),
   # english("basic1"),
   # english("basic2"),
@@ -148,14 +136,6 @@ list = [
   # english("business2"),
   # english("gakusyu"),
   # english("vr-radio"),
-  listdatajson("6809"), # ビジネス英語
-  listdatajson("0916"), # 英会話
-  listdatajson("2331"), # 英会話タイムトライアル
-  listdatajson("4407"), # 高校生からはじめる現代英語
-  listdatajson("3064"), # エンジョイ・シンプル・イングリッシュ
-  listdatajson("4121"), # ボキャブライダー
-  listdatajson("4794"), # 遠山顕の英会話楽習
-  listdatajson("4812"), # ニュースで英語術
 
   #chinese("kouza"),
   listdatajson("0915"), # まいにち中国語
@@ -178,18 +158,27 @@ list = [
   # kouza2("spanish"),
   # kouza("russian"),
   # kouza2("russian"),
-  listdatajson("0946"), # まいにちイタリア語 入門編
-  listdatajson("4411"), # まいにちイタリア語 応用編
-  listdatajson("0943"), # まいにちドイツ語 入門編
-  listdatajson("4410"), # まいにちドイツ語 応用編
-  listdatajson("0953"), # まいにちフランス語 入門編
-  listdatajson("4412"), # まいにちフランス語 応用編
   listdatajson("0948"), # まいにちスペイン語 入門編
   listdatajson("4413"), # まいにちスペイン語 応用編
   listdatajson("0956"), # まいにちロシア語 入門編
   listdatajson("4414"), # まいにちロシア語 応用編
-  listdatajson("0937"), # アラビア語講座
-  listdatajson("1893"), # ポルトガル語入門
+  listdatajson("0946"), # まいにちイタリア語 入門編
+  listdatajson("4411"), # まいにちイタリア語 応用編
+  listdatajson("0943"), # まいにちドイツ語 入門編
+  listdatajson("4410"), # まいにちドイツ語 応用編
+  listdatajson("4412"), # まいにちフランス語 応用編
+  listdatajson("0953"), # まいにちフランス語 入門編
+
+  listdatajson("6809"), # ビジネス英語
+  listdatajson("0916"), # 英会話
+  listdatajson("2331"), # 英会話タイムトライアル
+#  listdatajson("4407"), # 高校生からはじめる現代英語
+  listdatajson("3064"), # エンジョイ・シンプル・イングリッシュ
+  listdatajson("4121"), # ボキャブライダー
+#  listdatajson("4794"), # 遠山顕の英会話楽習
+#  listdatajson("4812"), # ニュースで英語術
+  listdatajson("7512"), # ニュースで学ぶ現代英語
+  # listdatajson("7137"), # ラジオで！カムカムエヴリバディ
 
 #  english("3month"),
 ]
